@@ -1,0 +1,22 @@
+# Environment & Config
+python-dotenv
+grpcio==1.67.1
+grpcio-tools==1.67.1
+grpcio-status==1.67.1
+
+# Core data processing
+pandas
+soundfile
+jiwer
+
+# Cloud ASR SDKs / APIs
+openai
+azure-cognitiveservices-speech
+google-cloud-speech
+
+# ML & Transformers
+torch
+transformers
+
+# Domain‑specific normalization
+indic-nlp-library
