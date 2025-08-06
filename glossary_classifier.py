@@ -15,6 +15,7 @@ Outputs:
 - results/glossary_terms.jsonl : line-delimited JSON {"term":..,"category":..}
 """
 import os
+import re
 import json
 import unicodedata
 import time
@@ -28,12 +29,27 @@ from tenacity import retry, stop_after_attempt, wait_fixed, RetryCallState
 
 from utils.logger import logger
 
+
+# map language names to the Unicode range for that script
+SCRIPT_RANGES: Dict[str, str] = {
+    "hindi": "\u0900-\u097f",  # Devanagari
+    "bengali": "\u0980-\u09ff",  # Bengali
+    "gujarati": "\u0a80-\u0aff",  # Gujarati
+    "tamil": "\u0b80-\u0bff",  # Tamil
+    "telugu": "\u0c00-\u0c7f",  # Telugu
+    "kannada": "\u0c80-\u0cff",  # Kannada
+    "malayalam": "\u0d00-\u0d7f",  # Malayalam
+    "oriya": "\u0b00-\u0b7f",  # Oriya
+    "punjabi": "\u0a00-\u0a7f",  # Gurmukhi
+    # add more here…
+}
+
 # -----------------------------------------------------------------------------
 # === DEFAULT CONFIG ===
 # -----------------------------------------------------------------------------
 DEFAULT_CONFIG: Dict[str, Any] = {
     # Input
-    "misrep_terms_jsonl": "results/sample_misrep_terms.jsonl",
+    "misrep_terms_jsonl": "results/misrep_terms.jsonl",
     "include_hyp": False,  # whether to include hyp_word in term list
     # Normalization: "unicode" or "indicnlp"
     "normalization": "indicnlp",
@@ -42,7 +58,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Classification
     "openai_model": "o4-mini",
     "batch_api_mode": True,  # False → Chat API mode; True → Batch API mode
-    "batch_chunk_size": 50,  # chunk size for both batch API and Chat API paths
+    "batch_chunk_size": 5000,  # chunk size for both batch API and Chat API paths
     # Retry logic
     "max_attempts": 3,
     # Fault tolerance
@@ -64,13 +80,29 @@ except ImportError:
 
 
 # -----------------------------------------------------------------------------
-# Helper: normalize Hindi text
+# Helper: normalize text
 # -----------------------------------------------------------------------------
 def normalize(term: str) -> str:
     mode = DEFAULT_CONFIG["normalization"]
     if mode == "indicnlp" and _indic_normalizer:
         return _indic_normalizer.normalize(term.strip())
     return unicodedata.normalize("NFC", term.strip())
+
+
+def strip_non_script_chars(text: str, language: str) -> str:
+    """
+    Remove any leading or trailing characters that are not in the Unicode block
+    for the given language.  If the language isn’t known, just strip whitespace.
+    """
+    lang_key = language.lower()
+    char_range = SCRIPT_RANGES.get(lang_key)
+    if not char_range:
+        # unknown language: fall back to trimming whitespace only
+        return text.strip()
+
+    # build a regex that strips anything not in that block off both ends
+    pattern = rf"^[^{char_range}]+|[^{char_range}]+$"
+    return re.sub(pattern, "", text)
 
 
 # -----------------------------------------------------------------------------
@@ -115,8 +147,16 @@ def extract_terms(records: List[Dict[str, Any]], include_hyp: bool) -> List[str]
     # Normalize & dedupe
     normalized = {normalize(t) for t in terms}
 
+    # Strip any non‐script chars (punctuation, digits, etc.) from ends
+    cleaned = {
+        strip_non_script_chars(t, DEFAULT_CONFIG["language"]) for t in normalized
+    }
+
+    # drop any empties that might result from stripping
+    final = [t for t in cleaned if t]
+
     # Sort
-    sorted_terms = sorted(normalized)
+    sorted_terms = sorted(final)
 
     # # Get the full records for the top 'x' terms
     # x = 100
@@ -166,7 +206,7 @@ def classify_via_batch_api(terms: List[str]) -> List[Dict[str, str]]:
     language = DEFAULT_CONFIG["language"]
     system_prompt = (
         f"Carefully classify each {language} agricultural **term** into one of the categories: "
-        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Generic.\n"
+        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Soil Nutrient/Fertiliser, Numeral, Generic.\n"
         f"If the input has no {language} letters, choose 'Not Applicable'.\n"
         "**Do NOT** wrap your response in markdown fences (```); send **raw JSON** only.\n"
         "Respond with a **single JSON array** in this form:\n"
@@ -340,7 +380,7 @@ def classify_via_chat_api(terms: List[str]) -> List[Dict[str, str]]:
     language = DEFAULT_CONFIG["language"]
     system_prompt = (
         f"Carefully classify each {language} agricultural **term** into one of the categories: "
-        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Generic.\n"
+        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Soil Nutrient/Fertiliser, Numeral, Generic.\n"
         f"If the input has no {language} letters, choose 'Not Applicable'."
         "**Do NOT** wrap your response in markdown fences (```); send **raw JSON** only.\n"
         "Respond with a **single JSON array** in this form:\n"
