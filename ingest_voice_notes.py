@@ -30,6 +30,8 @@ import argparse
 import logging
 import hashlib
 import json
+import re
+from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from typing import List, Dict, Union
 
@@ -43,7 +45,7 @@ from requests.adapters import HTTPAdapter, Retry
 # Fill in these values, then run `python ingest_voice_notes.py`
 # -----------------------------------------------------------------------------
 LANGUAGE = "hindi"
-SUFFIX = "1"
+SUFFIX = "2"
 DIRECT_CONFIG = {
     "input_path": f"dataset/metadata/{LANGUAGE}/hindi_transcription_audio_{SUFFIX}.xlsx",
     "audio_dir": f"dataset/audio/{LANGUAGE}/{SUFFIX}",
@@ -138,6 +140,39 @@ def compute_md5(path: Path) -> str:
     return h.hexdigest()
 
 
+# Helpers for Google Drive links
+
+
+def extract_drive_file_id(url: str) -> str | None:
+    """
+    Extracts the file-id from common Drive share URLs, e.g.
+      https://drive.google.com/file/d/<ID>/view
+      https://drive.google.com/open?id=<ID>
+    """
+    # /d/<ID>/
+    m = re.search(r"/d/([a-zA-Z0-9_-]+)", url)
+    if m:
+        return m.group(1)
+    # id=<ID>
+    qs = urlparse(url).query
+    params = parse_qs(qs)
+    if "id" in params:
+        return params["id"][0]
+    return None
+
+
+def normalize_drive_url(url: str) -> str:
+    """
+    Given any URL, if it's a Drive link, convert it to a direct-download URL:
+      https://drive.google.com/uc?export=download&id=<ID>
+    Otherwise return the URL unchanged.
+    """
+    file_id = extract_drive_file_id(url)
+    if file_id:
+        return f"https://drive.google.com/uc?export=download&id={file_id}"
+    return url
+
+
 # -----------------------------------------------------------------------------
 # Core ingestion function
 # -----------------------------------------------------------------------------
@@ -157,9 +192,12 @@ def ingest_voice_notes(
 
     audio_dir = Path(audio_dir)
     audio_dir.mkdir(parents=True, exist_ok=True)
+
     transcripts_dir = Path(transcripts_dir)
     transcripts_dir.mkdir(parents=True, exist_ok=True)
+
     manifest_path = Path(manifest_path)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_jsonl = manifest_path.with_suffix(manifest_path.suffix + "l")
     errors_jsonl = manifest_path.parent / "errors.jsonl"
 
@@ -188,21 +226,44 @@ def ingest_voice_notes(
         raise ValueError(f"Missing cols: {required - set(df.columns)}")
 
     for _, row in df.iterrows():
-        url = str(row["Filename"])
+        raw_url = str(row["Filename"])
+
+        # normalize Drive links, else pass through
+        download_url = normalize_drive_url(raw_url)
+
+        # choose UID: Drive ID if present, else your old stem logic
+        drive_id = extract_drive_file_id(raw_url)
+        if drive_id:
+            uid = drive_id
+        else:
+            uid = Path(raw_url).stem.split("_")[0]
+
         lang = str(row["Language"])
         transcript = str(row["Annotated Transcriptions"])
-        uid = Path(url).stem.split("_")[0]
 
         if uid in processed_uids:
             logger.debug("Skipping already processed %s", uid)
             continue
 
-        audio_path = audio_dir / f"{uid}.ogg"
+        # choose audio file extension type:
+        # 1) if the normalized URL’s path has a suffix (e.g. .ogg), use it;
+        # 2) else if this is a Drive link, default to .mp3;
+        # 3) otherwise fall back to .ogg
+        parsed = urlparse(download_url)
+        suffix = Path(parsed.path).suffix
+        if suffix:
+            ext = suffix
+        elif drive_id:
+            ext = ".mp3"
+        else:
+            ext = ".ogg"
+
+        audio_path = audio_dir / f"{uid}{ext}"
         txt_path = transcripts_dir / f"{uid}.txt"
 
         try:
             if not audio_path.exists():
-                download_with_retry(url, audio_path)
+                download_with_retry(download_url, audio_path)
             txt_path.write_text(transcript, encoding="utf-8")
 
             # Conditional metadata capture
@@ -225,7 +286,8 @@ def ingest_voice_notes(
 
             entry = {
                 "uid": uid,
-                "url": url,
+                "url": raw_url,
+                "download_url": download_url,
                 "language": lang,
                 "audio_path": str(audio_path),
                 "transcript_path": str(txt_path),
@@ -241,7 +303,7 @@ def ingest_voice_notes(
             processed_uids.add(uid)
 
         except Exception as e:
-            err = {"uid": uid, "url": url, "error": str(e)}
+            err = {"uid": uid, "url": download_url, "error": str(e)}
             errors_fp.write(json.dumps(err, ensure_ascii=False) + "\n")
             errors_fp.flush()
             logger.error("Error processing %s: %s", uid, e)

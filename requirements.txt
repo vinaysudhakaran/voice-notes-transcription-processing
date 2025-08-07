@@ -20,3 +20,6 @@ transformers
 
 # Domain‑specific normalization
 indic-nlp-library
+
+# Visualisation
+plotly

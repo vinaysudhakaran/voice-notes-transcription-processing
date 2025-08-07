@@ -58,7 +58,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Classification
     "openai_model": "o4-mini",
     "batch_api_mode": True,  # False → Chat API mode; True → Batch API mode
-    "batch_chunk_size": 5000,  # chunk size for both batch API and Chat API paths
+    "batch_chunk_size": 2000,  # chunk size for both batch API and Chat API paths
     # Retry logic
     "max_attempts": 3,
     # Fault tolerance
@@ -205,13 +205,25 @@ def classify_via_batch_api(terms: List[str]) -> List[Dict[str, str]]:
     client = OpenAI()
     language = DEFAULT_CONFIG["language"]
     system_prompt = (
-        f"Carefully classify each {language} agricultural **term** into one of the categories: "
-        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Soil Nutrient/Fertiliser, Numeral, Generic.\n"
-        f"If the input has no {language} letters, choose 'Not Applicable'.\n"
-        "**Do NOT** wrap your response in markdown fences (```); send **raw JSON** only.\n"
-        "Respond with a **single JSON array** in this form:\n"
-        '[{"term": ..., "category": ...}, ...]\n'
-        "**No** extra text."
+        f"Carefully classify each {language} agricultural term into one of the following categories:\n"
+        "- Crop\n"
+        "- Variety\n"
+        "- Agriculture unit\n"
+        "- Pest/Disease\n"
+        "- Symptom\n"
+        "- Soil Nutrient/Fertiliser\n"
+        "- Chemical Name\n"
+        "- Agri Practice\n"
+        "- Country/Place\n"
+        "- Numeral\n"
+        "- Month Name\n"
+        "- Season Name\n"
+        "- Generic\n\n"
+        f'If the input contains no {language} letters, assign category "Not Applicable".\n'
+        "Do NOT wrap your response in markdown fences (```); send **raw JSON** only.\n"
+        "Respond strictly with a **single JSON array** in this form:\n"
+        '[{"term": "<term>", "category": "<category>"}, ...]\n'
+        "No extra text, explanations, or comments."
     )
 
     # Build tasks
@@ -378,14 +390,27 @@ def classify_via_chat_api(terms: List[str]) -> List[Dict[str, str]]:
 
     client = OpenAI()
     language = DEFAULT_CONFIG["language"]
+
     system_prompt = (
-        f"Carefully classify each {language} agricultural **term** into one of the categories: "
-        "Crop, Variety, Agriculture unit, Pest/Disease, Symptom, Soil Nutrient/Fertiliser, Numeral, Generic.\n"
-        f"If the input has no {language} letters, choose 'Not Applicable'."
-        "**Do NOT** wrap your response in markdown fences (```); send **raw JSON** only.\n"
-        "Respond with a **single JSON array** in this form:\n"
-        '[{"term": ..., "category": ...}, ...]\n'
-        "**No** extra text."
+        f"Carefully classify each {language} agricultural term into one of the following categories:\n"
+        "- Crop\n"
+        "- Variety\n"
+        "- Agriculture unit\n"
+        "- Pest/Disease\n"
+        "- Symptom\n"
+        "- Soil Nutrient/Fertiliser\n"
+        "- Chemical Name\n"
+        "- Agri Practice\n"
+        "- Country/Place\n"
+        "- Numeral\n"
+        "- Month Name\n"
+        "- Season Name\n"
+        "- Generic\n\n"
+        f'If the input contains no {language} letters, assign category "Not Applicable".\n'
+        "Do NOT wrap your response in markdown fences (```); send **raw JSON** only.\n"
+        "Respond strictly with a **single JSON array** in this form:\n"
+        '[{"term": "<term>", "category": "<category>"}, ...]\n'
+        "No extra text, explanations, or comments."
     )
 
     user_prompt = json.dumps(terms, ensure_ascii=False)

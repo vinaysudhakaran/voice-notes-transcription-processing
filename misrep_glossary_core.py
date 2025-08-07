@@ -82,7 +82,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "openai_model": "whisper-1",
     "mms_model": "facebook/mms-1b-all",
     # Inputs
-    "manifest_path": "dataset/manifest/hindi/1/manifest.json",
+    "manifest_path": "dataset/manifest/hindi/2/manifest.json",
     "processed_uids_file": "results/extraction_processed_uids.txt",
     # Outputs
     "output_dir": "results",
