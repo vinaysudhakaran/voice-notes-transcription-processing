@@ -44,10 +44,10 @@ from requests.adapters import HTTPAdapter, Retry
 # === DIRECT-CONFIG MODE ===
 # Fill in these values, then run `python ingest_voice_notes.py`
 # -----------------------------------------------------------------------------
-LANGUAGE = "hindi"
+LANGUAGE = "telugu"
 SUFFIX = "2"
 DIRECT_CONFIG = {
-    "input_path": f"dataset/metadata/{LANGUAGE}/hindi_transcription_audio_{SUFFIX}.xlsx",
+    "input_path": f"dataset/metadata/{LANGUAGE}/{LANGUAGE}_transcription_audio_{SUFFIX}.xlsx",
     "audio_dir": f"dataset/audio/{LANGUAGE}/{SUFFIX}",
     "transcripts_dir": f"dataset/transcripts/{LANGUAGE}/{SUFFIX}",
     "manifest_path": f"dataset/manifest/{LANGUAGE}/{SUFFIX}/manifest.json",

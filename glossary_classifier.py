@@ -54,7 +54,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Normalization: "unicode" or "indicnlp"
     "normalization": "indicnlp",
     # Classification language
-    "language": "Hindi",
+    "language": "Telugu",
     # Classification
     "openai_model": "o4-mini",
     "batch_api_mode": True,  # False → Chat API mode; True → Batch API mode

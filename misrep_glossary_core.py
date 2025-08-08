@@ -76,17 +76,17 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Audio preprocessing
     "target_sample_rate": 16000,  # Hz
     # Language settings
-    "language_code": "hi-IN",  # for Azure & Google
+    "language_code": "te-IN",  # for Azure & Google
     "mms_target_lang": "hin",  # for Meta MMS
     # Model settings
     "openai_model": "whisper-1",
     "mms_model": "facebook/mms-1b-all",
     # Inputs
-    "manifest_path": "dataset/manifest/hindi/2/manifest.json",
+    "manifest_path": "dataset/manifest/telugu/2/manifest.json",
     "processed_uids_file": "results/extraction_processed_uids.txt",
     # Outputs
     "output_dir": "results",
-    "wav_dir": "wav_files",
+    "wav_dir": "wav_files/telugu",
     "misrep_terms_csv": "results/misrep_terms.csv",
     "misrep_terms_jsonl": "results/misrep_terms.jsonl",
     "errors_log": "results/extraction_errored_uids.txt",
@@ -589,6 +589,7 @@ def main():
                 )
                 logger.debug(f"ground truth words: {gt_words}")
 
+                engine_succeeded = False
                 for engine in cfg["engines"]:
                     fn = globals().get(f"transcribe_{engine}")
                     if not fn:
@@ -601,6 +602,7 @@ def main():
                         logger.error(f"{engine} failed on {uid}: {e}")
                         continue
 
+                    engine_succeeded = True  # only set if transcribe returned ok
                     hyp_words = result["text"].split()
                     logger.debug(f"{engine} hypothesis words: {hyp_words}")
 
@@ -690,10 +692,16 @@ def main():
                                 f"Failed to write entry for {uid}/{engine}/{idx}: {e}"
                             )
 
-                # Mark this UID as completed
-                completed.add(uid)
-                with completed_file.open("a", encoding="utf-8") as cf:
-                    cf.write(uid + "\n")
+                if engine_succeeded:
+                    # Mark this UID as completed
+                    completed.add(uid)
+                    with completed_file.open("a", encoding="utf-8") as cf:
+                        cf.write(uid + "\n")
+                else:
+                    errored.add(uid)
+                    with errored_file.open("a", encoding="utf-8") as ef:
+                        ef.write(uid + "\n")
+                    continue
 
             except Exception as e:
                 logger.error(f"Record {uid} processing failed: {e}")

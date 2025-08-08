@@ -28,7 +28,7 @@ from utils.logger import logger
 
 # Default configuration
 DEFAULT_CONFIG: Dict[str, str] = {
-    "language": "hindi",
+    "language": "telugu",
     "base_folder": "PROCESSED-DATA-DND",
     "output_dir": "results",
     "output_html": "category_distribution.html",
