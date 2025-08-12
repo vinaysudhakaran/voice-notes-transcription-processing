@@ -39,7 +39,7 @@ SCRIPT_RANGES: Dict[str, str] = {
     "telugu": "\u0c00-\u0c7f",  # Telugu
     "kannada": "\u0c80-\u0cff",  # Kannada
     "malayalam": "\u0d00-\u0d7f",  # Malayalam
-    "oriya": "\u0b00-\u0b7f",  # Oriya
+    "odiya": "\u0b00-\u0b7f",  # Odiya
     "punjabi": "\u0a00-\u0a7f",  # Gurmukhi
     # add more here…
 }
@@ -47,6 +47,9 @@ SCRIPT_RANGES: Dict[str, str] = {
 # -----------------------------------------------------------------------------
 # === DEFAULT CONFIG ===
 # -----------------------------------------------------------------------------
+
+LANGUAGE = "Odiya"
+
 DEFAULT_CONFIG: Dict[str, Any] = {
     # Input
     "misrep_terms_jsonl": "results/misrep_terms.jsonl",
@@ -54,7 +57,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Normalization: "unicode" or "indicnlp"
     "normalization": "indicnlp",
     # Classification language
-    "language": "Telugu",
+    "language": f"{LANGUAGE}",
     # Classification
     "openai_model": "o4-mini",
     "batch_api_mode": True,  # False → Chat API mode; True → Batch API mode

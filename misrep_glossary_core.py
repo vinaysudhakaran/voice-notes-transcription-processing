@@ -64,9 +64,14 @@ else:
 # -----------------------------------------------------------------------------
 # === DEFAULT CONFIG ===
 # -----------------------------------------------------------------------------
+
+LANGUAGE_CODE = "or-IN"
+LANGUAGE = "odiya"
+SUFFIX = "2"
+
 DEFAULT_CONFIG: Dict[str, Any] = {
-    # Engines to run: subset of ["whisper", "azure", "google", "mms"]
-    "engines": ["google"],
+    # Engines to run: subset of ["whisper", "azure", "google", "google_v2", "mms"]
+    "engines": ["azure"],
     # Clipping
     "clipping_mode": "lazy",  # "lazy" or "eager"
     "clips_dir": "clips",
@@ -76,17 +81,17 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Audio preprocessing
     "target_sample_rate": 16000,  # Hz
     # Language settings
-    "language_code": "te-IN",  # for Azure & Google
+    "language_code": LANGUAGE_CODE,  # for Azure & Google
     "mms_target_lang": "hin",  # for Meta MMS
     # Model settings
     "openai_model": "whisper-1",
     "mms_model": "facebook/mms-1b-all",
     # Inputs
-    "manifest_path": "dataset/manifest/telugu/2/manifest.json",
+    "manifest_path": f"dataset/manifest/{LANGUAGE}/{SUFFIX}/manifest.json",
     "processed_uids_file": "results/extraction_processed_uids.txt",
     # Outputs
     "output_dir": "results",
-    "wav_dir": "wav_files/telugu",
+    "wav_dir": f"wav_files/{LANGUAGE}",
     "misrep_terms_csv": "results/misrep_terms.csv",
     "misrep_terms_jsonl": "results/misrep_terms.jsonl",
     "errors_log": "results/extraction_errored_uids.txt",
@@ -448,6 +453,88 @@ def transcribe_google(wav: Path) -> Dict[str, Any]:
     }
 
 
+def transcribe_google_v2(wav: Path) -> Dict[str, Any]:
+    """
+    Google Cloud Speech-to-Text **V2** (synchronous), with word-level time offsets.
+    Requires:
+      - GOOGLE_APPLICATION_CREDENTIALS (service account JSON)
+      - GOOGLE_CLOUD_PROJECT (project id)
+      - GOOGLE_SPEECH_LOCATION (e.g., 'us-central1' / 'europe-west4' / 'asia-southeast1')
+    """
+    from google.api_core.client_options import ClientOptions
+    from google.cloud.speech_v2 import SpeechClient
+    from google.cloud.speech_v2.types import cloud_speech
+
+    project_id = (
+        os.getenv("GOOGLE_CLOUD_PROJECT")
+        or os.getenv("GCP_PROJECT")
+        or os.getenv("GCLOUD_PROJECT")
+    )
+    if not project_id:
+        raise RuntimeError("Set GOOGLE_CLOUD_PROJECT to your GCP project id")
+
+    location = os.getenv("GOOGLE_SPEECH_LOCATION", "asia-southeast1")
+
+    # Use the regional endpoint; Odia/chirp_2 isn't served from 'global'
+    client = SpeechClient(
+        client_options=ClientOptions(api_endpoint=f"{location}-speech.googleapis.com")
+    )
+
+    audio_content = wav.read_bytes()
+    config = cloud_speech.RecognitionConfig(
+        auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
+        language_codes=[DEFAULT_CONFIG["language_code"]],
+        # Odia requires chirp_2 in V2
+        model="chirp_2",
+        features=cloud_speech.RecognitionFeatures(
+            enable_word_time_offsets=True,
+            enable_automatic_punctuation=True,
+        ),
+    )
+
+    request = cloud_speech.RecognizeRequest(
+        recognizer=f"projects/{project_id}/locations/{location}/recognizers/_",
+        config=config,
+        content=audio_content,
+    )
+
+    response = client.recognize(request=request)
+
+    words = []
+    text_pieces = []
+    detected_langs = []
+    for result in response.results:
+        if hasattr(result, "language_code") and result.language_code:
+            detected_langs.append(result.language_code)
+
+        alt = result.alternatives[0]
+        text_pieces.append(alt.transcript)
+        for w in alt.words:
+            # V2 fields are start_offset/end_offset (protobuf Durations)
+            start = (getattr(w.start_offset, "seconds", 0) or 0) + (
+                getattr(w.start_offset, "nanos", 0) or 0
+            ) / 1e9
+            end = (getattr(w.end_offset, "seconds", 0) or 0) + (
+                getattr(w.end_offset, "nanos", 0) or 0
+            ) / 1e9
+            words.append(
+                {"text": w.word, "start": round(start, 3), "end": round(end, 3)}
+            )
+
+    # log what Google actually detected
+    try:
+        logger.debug(f"google_v2 detected languages: {detected_langs}")
+    except Exception:
+        pass
+
+    if not words:
+        # Fallback to whole-file span if no word timings
+        duration = audio_duration(wav)
+        words = [{"text": "", "start": 0.0, "end": duration}]
+
+    return {"text": " ".join(text_pieces).strip(), "chunks": words}
+
+
 # -----------------------------------------------------------------------------
 # Transcription + timestamps: Meta MMS (word-level)
 # -----------------------------------------------------------------------------
@@ -566,6 +653,12 @@ def main():
 
     recs_to_process = [r for r in recs if r["uid"] not in completed]
 
+    # print counts summary
+    logger.info(
+        f"Summary — manifest: {len(manifest)}, selected: {len(recs)}, "
+        f"completed: {len(completed)}, errored: {len(errored)}, "
+        f"to_process: {len(recs_to_process)} (skipped: {len(recs) - len(recs_to_process)})"
+    )
     if not recs_to_process:
         logger.info(f"No new records to process. Completed: {len(completed)}")
         jsonl_f.close()
@@ -604,7 +697,7 @@ def main():
 
                     engine_succeeded = True  # only set if transcribe returned ok
                     hyp_words = result["text"].split()
-                    logger.debug(f"{engine} hypothesis words: {hyp_words}")
+                    logger.debug(f"{engine} hypothesis words: {hyp_words}\n")
 
                     for idx, err in enumerate(
                         align_words_levenshtein(gt_words, hyp_words)

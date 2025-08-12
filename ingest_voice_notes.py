@@ -44,8 +44,10 @@ from requests.adapters import HTTPAdapter, Retry
 # === DIRECT-CONFIG MODE ===
 # Fill in these values, then run `python ingest_voice_notes.py`
 # -----------------------------------------------------------------------------
-LANGUAGE = "telugu"
+
+LANGUAGE = "odiya"
 SUFFIX = "2"
+
 DIRECT_CONFIG = {
     "input_path": f"dataset/metadata/{LANGUAGE}/{LANGUAGE}_transcription_audio_{SUFFIX}.xlsx",
     "audio_dir": f"dataset/audio/{LANGUAGE}/{SUFFIX}",
