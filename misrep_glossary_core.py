@@ -65,9 +65,9 @@ else:
 # === DEFAULT CONFIG ===
 # -----------------------------------------------------------------------------
 
-LANGUAGE_CODE = "or-IN"
-LANGUAGE = "odiya"
-SUFFIX = "2"
+LANGUAGE_CODE = "hi-IN"
+LANGUAGE = "hindi"
+SUFFIX = "1"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     # Engines to run: subset of ["whisper", "azure", "google", "google_v2", "mms"]

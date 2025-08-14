@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Duration bucket effects</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:24px;}
+h1,h2{margin:0 0 12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;}
+th,td{border:1px solid #ddd;padding:6px;vertical-align:top;}
+th{background:#f5f5f5;text-align:left;}
+tr:nth-child(even){background:#fafafa;}
+.code{font-family:Menlo,Consolas,monospace;font-size:12px;color:#333}
+</style>
+</head>
+<body>
+<h1>Duration bucket effects</h1>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>duration_bucket</th>
+      <th>n_errors</th>
+      <th>total_dur_s</th>
+      <th>errors_per_min</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><1s</td>
+      <td>17062</td>
+      <td>7158.812</td>
+      <td>143.001381</td>
+    </tr>
+    <tr>
+      <td>1–3s</td>
+      <td>20392</td>
+      <td>41880.835</td>
+      <td>29.214317</td>
+    </tr>
+    <tr>
+      <td>3–6s</td>
+      <td>32040</td>
+      <td>143056.169</td>
+      <td>13.438078</td>
+    </tr>
+    <tr>
+      <td>6–12s</td>
+      <td>27868</td>
+      <td>232009.122</td>
+      <td>7.206958</td>
+    </tr>
+    <tr>
+      <td>>12s</td>
+      <td>13426</td>
+      <td>256825.800</td>
+      <td>3.136601</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

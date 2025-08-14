@@ -48,7 +48,7 @@ SCRIPT_RANGES: Dict[str, str] = {
 # === DEFAULT CONFIG ===
 # -----------------------------------------------------------------------------
 
-LANGUAGE = "Odiya"
+LANGUAGE = "Hindi"
 
 DEFAULT_CONFIG: Dict[str, Any] = {
     # Input
