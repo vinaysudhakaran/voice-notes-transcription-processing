@@ -77,11 +77,11 @@ DEFAULT_CONFIG: Dict[str, str] = {
 
 
 # -----------------------------------------------------------------------------
-# Logger (compatible with your earlier script style)
+# Logger
 # -----------------------------------------------------------------------------
 try:
     # If your project provides utils.logger, use that for consistency.
-    from utils.logger import logger  # type: ignore
+    from utils.logger import logger
 except Exception:
     # Fallback to standard logging.
     logger = logging.getLogger("misrep_analytics")

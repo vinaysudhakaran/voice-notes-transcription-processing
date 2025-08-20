@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Position-binned error counts by category (bins=10)</title>
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:24px;}
+h1,h2{margin:0 0 12px 0}
+table{border-collapse:collapse;width:100%;font-size:14px;}
+th,td{border:1px solid #ddd;padding:6px;vertical-align:top;}
+th{background:#f5f5f5;text-align:left;}
+tr:nth-child(even){background:#fafafa;}
+.code{font-family:Menlo,Consolas,monospace;font-size:12px;color:#333}
+.small{font-size:12px;color:#666;margin-top:8px}
+</style>
+</head>
+<body>
+<h1>Position-binned error counts by category (bins=10)</h1>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>ref_cat</th>
+      <th>error_type</th>
+      <th>pos_bin</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Agri Practice</td>
+      <td>del</td>
+      <td>5</td>
+      <td>708</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>126</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>89</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>68</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>517</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>1366</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>67</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>89</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>156</td>
+    </tr>
+    <tr>
+      <td>Agri Practice</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>385</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>del</td>
+      <td>5</td>
+      <td>392</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>54</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>53</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>44</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>104</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>254</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>35</td>
+    </tr>
+    <tr>
+      <td>Agriculture unit</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>62</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>del</td>
+      <td>5</td>
+      <td>39</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>51</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>140</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Chemical Name</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>del</td>
+      <td>5</td>
+      <td>395</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>63</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>62</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>51</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>43</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>166</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>470</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>28</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>Country/Place</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>150</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>del</td>
+      <td>5</td>
+      <td>1533</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>273</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>359</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>283</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>254</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>470</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>2073</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>54</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>69</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>106</td>
+    </tr>
+    <tr>
+      <td>Crop</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>199</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>del</td>
+      <td>5</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>Month Name</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>del</td>
+      <td>5</td>
+      <td>403</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>74</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>109</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>112</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>112</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>349</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>37</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>36</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>38</td>
+    </tr>
+    <tr>
+      <td>Numeral</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>46</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>del</td>
+      <td>5</td>
+      <td>115</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>24</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>85</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>210</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>27</td>
+    </tr>
+    <tr>
+      <td>Pest/Disease</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>39</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>del</td>
+      <td>5</td>
+      <td>21</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>28</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>Season Name</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>del</td>
+      <td>5</td>
+      <td>244</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>46</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>29</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>28</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>108</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>280</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>24</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>25</td>
+    </tr>
+    <tr>
+      <td>Soil Nutrient/Fertiliser</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>68</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>del</td>
+      <td>5</td>
+      <td>169</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>29</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>21</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>89</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>191</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <td>Symptom</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>51</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>del</td>
+      <td>5</td>
+      <td>488</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>0</td>
+      <td>53</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>1</td>
+      <td>69</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>2</td>
+      <td>61</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>3</td>
+      <td>37</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>4</td>
+      <td>172</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>5</td>
+      <td>452</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>6</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>7</td>
+      <td>22</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>8</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>Variety</td>
+      <td>sub</td>
+      <td>9</td>
+      <td>120</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
