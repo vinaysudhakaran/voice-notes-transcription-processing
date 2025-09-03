@@ -180,18 +180,31 @@ def normalize_digits_to_ascii(token: str) -> str:
     return "".join(out)
 
 
+def _remove_punct_and_symbols_keep_marks(t: str) -> str:
+    """
+    Remove punctuation (P*) and symbols (S*) but keep Letters (L*), Marks (M*),
+    Numbers (N*), and whitespace. Preserves Indic vowel signs/marks.
+    """
+    out = []
+    for ch in t:
+        cat = unicodedata.category(ch)  # e.g., 'Lo','Mn','Mc','Nd','Zs','Po','Sm',...
+        if cat[0] in ("P", "S"):  # drop punctuation & symbols
+            continue
+        out.append(ch)
+    return "".join(out)
+
+
 def normalize_token(
     token: str, language: str, keep_punct: bool = False, normalize_digits: bool = True
 ) -> str:
-    """Unicode NFC, optional punctuation trimming (language-aware), optional digit normalization."""
+    """Unicode NFC, strip non-script chars at ends, optionally strip punctuation/symbols
+    (but keep Indic marks), optionally normalize digits to ASCII."""
     if token is None or (isinstance(token, float) and math.isnan(token)):
         return ""
     t = unicodedata.normalize("NFC", str(token).strip())
-    # mimic the glossary_classifier clean (strip non-script at ends)
-    t = strip_non_script_chars(t, language)
+    t = strip_non_script_chars(t, language)  # trims non-script at ends only
     if not keep_punct:
-        # remove residual punctuation inside
-        t = re.sub(r"[^\w\s]", "", t, flags=re.UNICODE)
+        t = _remove_punct_and_symbols_keep_marks(t)  # preserves mātrās
     if normalize_digits:
         t = normalize_digits_to_ascii(t)
     return t.strip()
@@ -342,17 +355,11 @@ DOMAIN_EXCLUDE = {"Generic", "Not Applicable", None, np.nan}
 
 def glossary_coverage(df: pd.DataFrame, out_dir: Path) -> List[Tuple[str, str]]:
     items: List[Tuple[str, str]] = []
-    # Unique ref terms
-    uniq_terms = df["ref_norm"].dropna().unique().tolist()
-    total_unique = len(uniq_terms)
-    with_cat = df.dropna(subset=["ref_cat"])["ref_norm"].unique().tolist()
-    total_with_cat = len(with_cat)
-    with_domain = (
-        df[df["ref_cat"].isin(set(df["ref_cat"].unique()) - DOMAIN_EXCLUDE)]["ref_norm"]
-        .unique()
-        .tolist()
-    )
-    total_with_domain = len(with_domain)
+    total_unique = df["ref_norm"].dropna().nunique()
+    total_with_cat = df[df["ref_cat"].notna()]["ref_norm"].nunique()
+    total_with_domain = df[
+        df["ref_cat"].notna() & (~df["ref_cat"].isin({"Generic", "Not Applicable"}))
+    ]["ref_norm"].nunique()
 
     table = pd.DataFrame(
         [
@@ -530,11 +537,12 @@ def top_problem_terms_by_cat(
     if dd.empty:
         return items
     grp = (
-        dd.groupby(["ref_cat", "ref_norm"])
+        dd.groupby(["ref_cat", "ref_word"])
         .size()
         .reset_index(name="count")
         .sort_values(["ref_cat", "count"], ascending=[True, False])
     )
+
     # take top_k per category
     grp["rank"] = grp.groupby("ref_cat")["count"].rank(method="first", ascending=False)
     top = grp[grp["rank"] <= top_k].drop(columns=["rank"])
@@ -550,7 +558,7 @@ def top_problem_terms_by_cat(
     if not top.empty:
         fig = px.treemap(
             top,
-            path=["ref_cat", "ref_norm"],
+            path=["ref_cat", "ref_word"],
             values="count",
             title=f"Top problem terms by category — top {top_k}/cat",
         )
@@ -573,7 +581,7 @@ def category_bounded_confusions(
     if subs.empty:
         return items
     grp = (
-        subs.groupby(["ref_cat", "ref_norm", "hyp_word"])
+        subs.groupby(["ref_cat", "ref_word", "hyp_word"])
         .size()
         .reset_index(name="count")
         .sort_values(["ref_cat", "count"], ascending=[True, False])
@@ -592,7 +600,7 @@ def category_bounded_confusions(
     if not top.empty:
         fig = px.treemap(
             top,
-            path=["ref_cat", "ref_norm", "hyp_word"],
+            path=["ref_cat", "ref_word", "hyp_word"],
             values="count",
             title=f"Top confusions by category — top {top_k}/cat",
         )
@@ -609,11 +617,11 @@ def category_bounded_confusions(
 def per_category_top_pairs(
     df: pd.DataFrame, out_dir: Path, top_k: int = 100
 ) -> List[Tuple[str, str]]:
-    """Write a separate table per ref_cat with top (ref_norm -> hyp_word) substitution pairs."""
+    """Write a separate table per ref_cat with top (ref_word -> hyp_word) substitution pairs."""
     items: List[Tuple[str, str]] = []
     subs = (
         df[df["error_type"] == "sub"]
-        .dropna(subset=["ref_cat", "ref_norm", "hyp_word"])
+        .dropna(subset=["ref_cat", "ref_word", "hyp_word"])
         .copy()
     )
     if subs.empty:
@@ -626,7 +634,7 @@ def per_category_top_pairs(
     for cat in sorted(subs["ref_cat"].unique()):
         cdf = subs[subs["ref_cat"] == cat]
         top_pairs = (
-            cdf.groupby(["ref_norm", "hyp_word"])
+            cdf.groupby(["ref_word", "hyp_word"])
             .size()
             .reset_index(name="count")
             .sort_values("count", ascending=False)
@@ -654,11 +662,11 @@ def per_category_top_pairs(
 def per_category_confusion_matrices(
     df: pd.DataFrame, out_dir: Path, top_k: int = 100
 ) -> List[Tuple[str, str]]:
-    """For each category, build a ref_norm × hyp_word confusion matrix limited to top-K rows/cols."""
+    """For each category, build a ref_word × hyp_word confusion matrix limited to top-K rows/cols."""
     items: List[Tuple[str, str]] = []
     subs = (
         df[df["error_type"] == "sub"]
-        .dropna(subset=["ref_cat", "ref_norm", "hyp_word"])
+        .dropna(subset=["ref_cat", "ref_word", "hyp_word"])
         .copy()
     )
     if subs.empty:
@@ -670,13 +678,12 @@ def per_category_confusion_matrices(
     cat_links: List[Tuple[str, str]] = []
     for cat in sorted(subs["ref_cat"].unique()):
         cdf = subs[subs["ref_cat"] == cat]
-        pair_counts = (
-            cdf.groupby(["ref_norm", "hyp_word"]).size().reset_index(name="count")
-        )
 
-        # pick top-K rows/cols by marginal totals
+        pair_counts = (
+            cdf.groupby(["ref_word", "hyp_word"]).size().reset_index(name="count")
+        )
         top_ref = (
-            pair_counts.groupby("ref_norm")["count"]
+            pair_counts.groupby("ref_word")["count"]
             .sum()
             .sort_values(ascending=False)
             .head(top_k)
@@ -689,17 +696,13 @@ def per_category_confusion_matrices(
             .head(top_k)
             .index
         )
-
         filt = pair_counts[
-            pair_counts["ref_norm"].isin(top_ref)
+            pair_counts["ref_word"].isin(top_ref)
             & pair_counts["hyp_word"].isin(top_hyp)
         ]
-        if filt.empty:
-            continue
-
         pivot = (
             filt.pivot_table(
-                index="ref_norm", columns="hyp_word", values="count", fill_value=0
+                index="ref_word", columns="hyp_word", values="count", fill_value=0
             )
             .sort_index(axis=0)
             .sort_index(axis=1)
@@ -969,7 +972,7 @@ def snippet_index_by_cat(
     if subs.empty:
         return items
     top_pairs = (
-        subs.groupby(["ref_cat", "ref_norm", "hyp_word"])
+        subs.groupby(["ref_cat", "ref_word", "hyp_word"])
         .size()
         .reset_index(name="count")
         .sort_values(["ref_cat", "count"], ascending=[True, False])
@@ -984,13 +987,13 @@ def snippet_index_by_cat(
     for _, r in tp.iterrows():
         ex = subs[
             (subs["ref_cat"] == r["ref_cat"])
-            & (subs["ref_norm"] == r["ref_norm"])
+            & (subs["ref_word"] == r["ref_word"])
             & (subs["hyp_word"] == r["hyp_word"])
         ].head(3)
         ex = ex[
             [
                 "ref_cat",
-                "ref_norm",
+                "ref_word",
                 "hyp_word",
                 "uid",
                 "model",
